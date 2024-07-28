@@ -16,10 +16,10 @@ type TestEvent struct {
 	Output  string  `json:"Output,omitempty"`
 }
 
-var testOutputs map[string]string
+var testOutputs map[string][]*string
 
 func main() {
-	testOutputs = make(map[string]string)
+	testOutputs = make(map[string][]*string)
 	decoder := json.NewDecoder(os.Stdin)
 	for {
 		var event TestEvent
@@ -35,7 +35,12 @@ func main() {
 }
 
 func processEvent(event TestEvent) {
-	testOutputs[event.Test] += event.Output
+	if _, ok := testOutputs[event.Test]; !ok {
+		testOutputs[event.Test] = make([]*string, 0)
+	}
+	// if event.Output != "" {
+	// 	testOutputs[event.Test] = append(testOutputs[event.Test], &event.Output)
+	// }
 
 	switch event.Action {
 	case "start":
@@ -47,7 +52,7 @@ func processEvent(event TestEvent) {
 		fmt.Printf("PASS: %s (%.2fs)\n", event.Test, event.Elapsed)
 	case "fail":
 		fmt.Printf("FAIL: %s (%.2fs)\n", event.Test, event.Elapsed)
-		fmt.Printf("\n%s\n", testOutputs[event.Test])
+		// fmt.Printf("\n%s\n", testOutputs[event.Test])
 	case "skip":
 	case "output":
 	default:
